@@ -1,29 +1,23 @@
-FROM ruby:2.7
-ENV DEBIAN_FRONTEND="noninteractive"
+FROM ruby:2.7-alpine
 
-RUN apt-get update && apt-get install -y \
-    libicu-dev \
-    cmake
+RUN apk update \
+    && apk add --virtual=build-deps --no-cache build-base icu-dev openssl-dev cmake \
+    && apk add --virtual=runtime-deps --no-cache openssh icu-libs git git-lfs
 
-COPY Gemfile* /tmp/
-COPY gollum.gemspec* /tmp/
 WORKDIR /tmp
-RUN bundle install
 
-RUN gem install \
-    asciidoctor \
-    creole \
-    wikicloth \
-    org-ruby \
-    RedCloth \
-    bibtex-ruby \
-    && echo "gem-extra complete"
+COPY Gemfile .
+COPY gollum.gemspec .
+RUN bundle install \
+    && gem install commonmarker creole
+RUN apk del build-deps
 
-WORKDIR /app
-COPY . /app
+WORKDIR /opt/gollum
+
+COPY . .
 RUN bundle exec rake install
 
-VOLUME /wiki
-WORKDIR /wiki
-COPY docker-run.sh /docker-run.sh
-ENTRYPOINT ["/docker-run.sh"]
+WORKDIR /var/lib/gollum
+
+ENV PATH="/opt/gollum/bin:$PATH"
+ENTRYPOINT ["gollum"]
