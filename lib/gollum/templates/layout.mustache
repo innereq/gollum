@@ -17,7 +17,17 @@
 	var uploadDest = 'uploads';
 	var perPageUploads = '{{per_page_uploads}}';
 	if (perPageUploads == 'true') {
-	  uploadDest = uploadDest + window.location.pathname.replace(/.*gollum\/[-\w]+\//, "/").replace(/\.[^/.]+$/, "").replace(baseUrl, "")
+      uploadDest = window.location.pathname;
+      // remove base path if it is set
+      uploadDest = uploadDest.replace(baseUrl, "");
+      // remove base_url and gollum/* subpath if necessary
+      uploadDest = uploadDest.replace(/^\/gollum\/[-\w]+\//, "");
+      // remove slash at the beginning
+      uploadDest = uploadDest.replace(/^\//, "");
+      // remove file name
+      uploadDest = uploadDest.substring(0, uploadDest.lastIndexOf("/"));
+      // unescape characters
+      uploadDest = decodeURI(uploadDest);
 	}
 	{{#page}}
 	  var pageFullPath = '{{escaped_url_path}}';

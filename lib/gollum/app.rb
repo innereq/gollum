@@ -11,6 +11,7 @@ require 'sprockets-helpers'
 require 'octicons'
 require 'sass'
 require 'pathname'
+require 'uri'
 
 require 'gollum'
 require 'gollum/assets'
@@ -244,11 +245,12 @@ module Precious
           dir.sub!(/^#{wiki.base_path}/, '') if wiki.base_path
           # remove base_url and gollum/* subpath if necessary
           dir.sub!(/^\/gollum\/[-\w]+\//, '')
-          # remove file extension
-          dir.sub!(/#{::File.extname(dir)}$/, '')
-          # revert escaped whitespaces
-          dir.gsub!(/%20/, ' ')
-          dir = ::File.join('uploads', dir)
+          # remove file name
+          dir = ::File.dirname(dir)
+          # unescape characters
+          dir = ::URI.unescape(dir)
+          # smth? doesn't work without it
+          dir = ::File.join('./', dir)
         else
           # store all uploads together
           dir = 'uploads'
